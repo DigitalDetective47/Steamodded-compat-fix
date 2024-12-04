@@ -163,7 +163,7 @@ Set `prefix_config.key = false` on your object instead.]]):format(obj.key), obj.
 
             -- Setup Localize text
             o:process_loc_text()
-            if SMODS.config.log_level == 1 and self.log_interval and i%(self.log_interval) == 0 then
+            if self.log_interval and i%(self.log_interval) == 0 then
                 end_time = love.timer.getTime()
                 inject_time = inject_time + end_time - start_time
                 start_time = end_time
@@ -1109,7 +1109,7 @@ Set `prefix_config.key = false` on your object instead.]]):format(obj.key), obj.
         end,
         inject = function(self)
             G.P_CENTERS[self.key] = self
-            SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
+            if not self.omit then SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self) end
             for k, v in pairs(SMODS.ObjectTypes) do
                 -- Should "cards" be formatted as `{[<center key>] = true}` or {<center key>}?
                 -- Changing "cards" and "pools" wouldn't be hard to do, just depends on preferred format
@@ -1295,6 +1295,7 @@ Set `prefix_config.key = false` on your object instead.]]):format(obj.key), obj.
         atlas = 'centers',
         pos = { x = 0, y = 0 },
         config = {},
+        omit = false,
         unlock_condition = {},
         stake = 1,
         class_prefix = 'b',
