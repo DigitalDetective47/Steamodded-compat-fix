@@ -265,8 +265,11 @@ Set `prefix_config.key = false` on your object instead.]]):format(obj.key), obj.
         process_loc_text = function() end,
         inject = function(self)
             self.font = self.font or 1
-            if type(self.font) == 'number' then
-                self.font = G.FONTS[self.font]
+            if type(self.font) == 'table' and not self.font.FONT and self.font.file and self.font.render_scale then
+                local data = assert(NFS.newFileData(self.mod.path .. 'assets/fonts/' .. self.font.file), ('Failed to collect file data for font of language %s'):format(self.key))
+                self.font.FONT = love.graphics.newFont(data, self.font.render_scale)
+            else 
+                self.font = G.FONTS[type(self.font) == 'number' and self.font or 1] or G.FONTS[1]
             end
             G.LANGUAGES[self.key] = self
             if self.key == G.SETTINGS.language then G.LANG = self end
@@ -2580,38 +2583,38 @@ Set `prefix_config.key = false` on your object instead.]]):format(obj.key), obj.
             G.P_TAGS[self.key] = self
             SMODS.insert_pool(G.P_CENTER_POOLS[self.set], self)
         end,
-        generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
-            local target = {
-                type = 'descriptions',
-                key = self.key,
-                set = self.set,
-                nodes = desc_nodes,
-                vars = specific_vars
-            }
-            local res = {}
-            if self.loc_vars and type(self.loc_vars) == 'function' then
-                -- card is a dead arg here
-                res = self:loc_vars(info_queue) or {}
-                target.vars = res.vars or target.vars
-                target.key = res.key or target.key
-                target.set = res.set or target.set
-                target.scale = res.scale
-                target.text_colour = res.text_colour
-            end
-            if desc_nodes == full_UI_table.main and not full_UI_table.name then
-                full_UI_table.name = localize { type = 'name', set = target.set, key = target.key, nodes = full_UI_table.name }
-            elseif desc_nodes ~= full_UI_table.main and not desc_nodes.name then
-                desc_nodes.name = localize{type = 'name_text', key = target.key, set = target.set } 
-            end
-            if res.main_start then
-                desc_nodes[#desc_nodes + 1] = res.main_start
-            end
-            localize(target)
-            if res.main_end then
-                desc_nodes[#desc_nodes + 1] = res.main_end
-            end
-            desc_nodes.background_colour = res.background_colour
-        end
+        -- generate_ui = function(self, info_queue, card, desc_nodes, specific_vars, full_UI_table)
+        --     local target = {
+        --         type = 'descriptions',
+        --         key = self.key,
+        --         set = self.set,
+        --         nodes = desc_nodes,
+        --         vars = specific_vars
+        --     }
+        --     local res = {}
+        --     if self.loc_vars and type(self.loc_vars) == 'function' then
+        --         -- card is a dead arg here
+        --         res = self:loc_vars(info_queue, card) or {}
+        --         target.vars = res.vars or target.vars
+        --         target.key = res.key or target.key
+        --         target.set = res.set or target.set
+        --         target.scale = res.scale
+        --         target.text_colour = res.text_colour
+        --     end
+        --     if desc_nodes == full_UI_table.main and not full_UI_table.name then
+        --         full_UI_table.name = localize { type = 'name', set = target.set, key = target.key, nodes = full_UI_table.name }
+        --     elseif desc_nodes ~= full_UI_table.main and not desc_nodes.name then
+        --         desc_nodes.name = localize{type = 'name_text', key = target.key, set = target.set } 
+        --     end
+        --     if res.main_start then
+        --         desc_nodes[#desc_nodes + 1] = res.main_start
+        --     end
+        --     localize(target)
+        --     if res.main_end then
+        --         desc_nodes[#desc_nodes + 1] = res.main_end
+        --     end
+        --     desc_nodes.background_colour = res.background_colour
+        -- end
     }
 
     -------------------------------------------------------------------------------------------------
