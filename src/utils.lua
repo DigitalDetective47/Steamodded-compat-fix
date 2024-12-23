@@ -177,7 +177,7 @@ end
 
 function SMODS.process_loc_text(ref_table, ref_value, loc_txt, key)
     local target = (type(loc_txt) == 'table') and
-    (loc_txt[G.SETTINGS.language] or loc_txt['default'] or loc_txt['en-us']) or loc_txt
+    ((G.SETTINGS.real_language and loc_txt[G.SETTINGS.real_language]) or loc_txt[G.SETTINGS.language] or loc_txt['default'] or loc_txt['en-us']) or loc_txt
     if key and (type(target) == 'table') then target = target[key] end
     if not (type(target) == 'string' or target and next(target)) then return end
     ref_table[ref_value] = target
@@ -219,6 +219,7 @@ end
 function SMODS.handle_loc_file(path)
     local dir = path .. 'localization/'
     handle_loc_file(dir, G.SETTINGS.language, true)
+    if G.SETTINGS.real_language then handle_loc_file(dir, G.SETTINGS.real_language, true) end
     handle_loc_file(dir, 'default')
     handle_loc_file(dir, 'en-us')
 end
@@ -327,7 +328,10 @@ function SMODS.create_card(t)
     if t.seal then _card:set_seal(t.seal) end
     if t.stickers then 
         for i, v in ipairs(t.stickers) do
-            if SMODS.Stickers[v]:should_apply(_card, t.area, true) then SMODS.Stickers[v]:apply(_card, true) end
+            local s = SMODS.Stickers[v]
+            if not s or type(s.should_apply) ~= 'function' or s:should_apply(_card, t.area, true) then
+                SMODS.Stickers[v]:apply(_card, true)
+            end
         end
     end
 
